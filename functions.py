@@ -38,7 +38,7 @@ def is_valid_params(dataframe, target_col, columns, target_type=[], columns_type
 
     # Analisis variable target_col
     if target_col not in dataframe.columns: # Control para ver si 'target_col' existe en el dataframe
-        mensajes.append(f"La columna '{target_col}' no existe en el dataframe")
+        mensajes.append(f"La columna target '{target_col}' no existe en el dataframe")
     else:
         if len(target_type) > 0: # Control para ver si 'target_col' es una variable del tipo especificado
             target_type_list = df_types[df_types[var.COLUMN_TIPO].isin(target_type)][var.COLUMN_NOMBRE].to_list() #Columnas del dataframe que son del tipo 'target_type'
