@@ -31,7 +31,7 @@ def tipifica_variables(df, umbral_categoria, umbral_continua):
     return pd.DataFrame(resultados) #crea un dataframe con la lista de resultados 
 
 
-def is_valid_params(dataframe, target_col, columns, target_type="", columns_type=[]):
+def is_valid_params(dataframe, target_col, columns, target_type=[], columns_type=[]):
     mensajes = []
 
     df_types = tipifica_variables(dataframe, var.UMBRAL_CATEGORIA, var.UMBRAL_CONTINUA)
@@ -41,9 +41,9 @@ def is_valid_params(dataframe, target_col, columns, target_type="", columns_type
         mensajes.append(f"La columna '{target_col}' no existe en el dataframe")
     else:
         if len(target_type) > 0: # Control para ver si 'target_col' es una variable del tipo especificado
-            target_type_list = df_types[df_types[var.COLUMN_TIPO].isin([target_type])][var.COLUMN_NOMBRE].to_list() #Columnas del dataframe que son del tipo 'target_type'
+            target_type_list = df_types[df_types[var.COLUMN_TIPO].isin(target_type)][var.COLUMN_NOMBRE].to_list() #Columnas del dataframe que son del tipo 'target_type'
             if not target_col in target_type_list:
-                mensajes.append(f"La columna '{target_col}' no es una variable [{target_type}]")
+                mensajes.append(f"La columna '{target_col}' no es una variable de tipo {target_type}")
 
     # Análisis de las columnas
     if len(columns_type) > 0:
