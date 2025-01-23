@@ -1,31 +1,44 @@
 import pandas as pd
 import variables as var
 
-def tipifica_variables(df, umbral_categoria, umbral_continua):
+def tipifica_variables(df, umbral_categoria= var.UMBRAL_CATEGORIA, umbral_continua= var.UMBRAL_CONTINUA):
     """
     Asigna un tipo a las variables de un dataframe en base a su cardinalidad y porcentaje de cardinalidad.
 
+    Argumentos: 
         df: el dataframe a analizar
-        umbral_categoria (int): Límite de veces que tiene que aparecer una variable para ser categórica
-        umbral_continua (float): Porcentaje mínimo de cardinalidad que tiene que tener una variable para ser numérica continua
+        umbral_categoria (int): número de veces max. que tiene que aparecer una variable para ser categórica
+        bral_continua (float): porcentaje mínimo de cardinalidad que tiene que tener una variable para ser numérica continua
 
+    Retorna: 
+        Un dataframe con los resultados con dos columnas: 
+        - El nombre de la variable 
+        - El tipo sugerido para la variable 
+        
     """
 
     resultados = [] #se crea una lista vacía para meter los resultados
 
     for columna in df.columns: #coge cada columna en el dataframe
         cardinalidad = df[columna].nunique() #calcula la cardinalidad 
-        porcentaje_cardinalidad = cardinalidad / len(df) #calcula el porcentaje 
+        porcentaje_cardinalidad = (cardinalidad / len(df))*100 #calcula el porcentaje 
 
         if cardinalidad == 2:
-            tipo = "Binaria"
-        elif (cardinalidad < umbral_categoria) and (cardinalidad != 2):
-            tipo = "Categórica"
-        elif porcentaje_cardinalidad >= umbral_continua:
-            tipo = "Numérica Continua"
-        else:
-            tipo = "Numérica Discreta"
+            tipo = var.TIPO_BINARIA
+            #tipo = "Binaria"
 
+        elif (cardinalidad < umbral_categoria) and (cardinalidad != 2):
+            tipo = var.TIPO_CATEGORICA
+            #"Categórica"
+
+        elif porcentaje_cardinalidad >= umbral_continua: #mayor que umbral categoria, mayor o igual que umbral continua
+            tipo = var.TIPO_NUM_CONTINUA
+            #"Numérica Continua"
+
+        else:
+            tipo = var.TIPO_NUM_DISCRETA #el porcentaje de cardinalidad es menor que umbral continua 
+            #"Numérica Discreta"
+        
         resultados.append({"variable": columna, "tipo": tipo}) #mete en la lista de resultados la columna y el tipo que se le asigna 
 
     return pd.DataFrame(resultados) #crea un dataframe con la lista de resultados 
