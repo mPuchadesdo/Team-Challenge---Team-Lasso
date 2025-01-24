@@ -29,31 +29,24 @@ def plot_features_cat_regression(dataframe, target_col = "", columns = [], pvalu
 
     sns.set_style(var.SNS_STYLE)
     
-    if target_col not in dataframe.columns: # Control para ver si la target_col existe en el dataframe
-        print(f"La columna '{target_col}' no existe en el dataframe")
+    # Comprobamos utilizando la función is_valid_params que las columnas cumplen con su tipo elegido (target numérico y columns categóricas):
+    numeric_types = [var.TIPO_NUM_CONTINUA, var.TIPO_NUM_DISCRETA]
+    categoric_types = [var.TIPO_BINARIA, var.TIPO_CATEGORICA]
+    if not fnc.is_valid_params(dataframe, target_col, columns, numeric_types, categoric_types):
         return None
     
-    if dataframe[target_col].dtype != "float64": # Control para ver si la target_col es una variable numérica continua
-         print(f"La columna '{target_col}' no es una variable numérica continua")
-         return None
-    
-    for col in columns:
-         if col not in dataframe.columns: # Control para ver si las columnas introducidas en columns existen en el dataframe
-              print(f"La columna '{col}' no existe en el dataframe")
-              return None
+    if len(columns) == 0: # Al no introducir el argumento columns, seleccionamos las variables numéricas:
+        df_types = fnc.tipifica_variables(dataframe, var.UMBRAL_CATEGORIA, var.UMBRAL_CONTINUA)
+        num_col = df_types[df_types[var.COLUMN_TIPO].isin(numeric_types)][var.COLUMN_NOMBRE].to_list()
     
     sig_num_col = []
     sig_cat_col = []
 
-    if columns == []: # Si no introducimos columnas categóricas, cogeremos las columnas numéricas continuas:
-        num_col = []
-        for col in dataframe.describe().columns.to_list():
-            if len(dataframe[col].unique()) > var.UMBRAL_CONTINUA: # Verificamos que no sea una categórica codificada numéricamente
-                num_col.append(col)
-        if dataframe[num_col].isna().sum().sum() != 0: # Verificamos si existen nulos para evitar errores al utilizar la correlación de pearson
+    if columns == []: # Si no introducimos columnas categóricas, cogeremos las columnas numéricas:
+        if dataframe[num_col].isna().sum().sum() != 0: # Verificamos si existen nulos para avisar al usuario de que existen:
              print(f"Existen nulos o NaN presentes en las variables numéricas de estudio, tenga en cuenta que el análisis de correlación se realizará eliminando esos nulos.")
 
-        for col in num_col: # Usamos la correlación de pearson para ver si están relacionadas:
+        for col in num_col: # Usamos la correlación de pearson para ver si están relacionadas (eliminando nulos en caso de que haya):
             p = pearsonr(dataframe.dropna()[target_col], dataframe.dropna()[col]).pvalue
             if p < pvalue: # Si la relación entre variables entra en la significación seleccionada, nos guardamos esa columna:
                 sig_num_col.append(col)
