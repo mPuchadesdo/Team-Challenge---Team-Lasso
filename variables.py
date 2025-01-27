@@ -14,5 +14,5 @@ UMBRAL_CATEGORIA = 10
 # Umbral para tipificar una columna como numérica continua
 UMBRAL_CONTINUA = 15
 
-# Estilo de los grafiocos de Seaborn
+# Estilo de los graficos de Seaborn
 SNS_STYLE = "whitegrid"
