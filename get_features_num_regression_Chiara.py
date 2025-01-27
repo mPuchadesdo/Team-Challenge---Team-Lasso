@@ -1,10 +1,12 @@
 import numpy as np
 import pandas as pd
-from scipy.stats import pearsonr
+from scipy.stats import pearsonr, stats
+import variables as var
 
 def get_features_num_regression(df, target_col, umbral_corr, pvalue=None):
     '''
     Selecciona features numéricas basadas en su correlación con la variable target.
+    La variable target debe ser numerica con alta cardinalidad.
     
     Args:
         df (pandas.DataFrame): DataFrame de entrada
@@ -24,11 +26,11 @@ def get_features_num_regression(df, target_col, umbral_corr, pvalue=None):
         print(f"Error: {target_col} debe ser una cadena de texto")
         return None
     # Verifica que la columna target_col sea numérica y con alta cardinalidad
-    if not isinstance(df[target_col].dtype, np.number):
-        print(f"Error: La columna {target_col} debe ser numérica")
+    if not np.issubdtype(df[target_col].dtype, np.number):  #np.issubdtype comprueba si el tipo de datos de la columna es un subtipo de np.number (incluyendo enteros y float).
+        print(f"Error: La columna '{target_col}' debe ser numérica.")
         return None
     n_unique = df[target_col].nunique()
-    if n_unique < 15:  # umbral arbitrario para considerar alta cardinalidad
+    if n_unique < var.UMBRAL_CONTINUA:  # umbral arbitrario para considerar alta cardinalidad
         print(f"Error: La columna {target_col} debe tener alta cardinalidad")
         return None
     
@@ -49,7 +51,7 @@ def get_features_num_regression(df, target_col, umbral_corr, pvalue=None):
     # Iterar sobre todas las columnas numéricas del dataframe 
     # excluiendo la target y las numericas con cardinalidad baja que pueden ser consideradas categoricas 
     for col in df.select_dtypes(include=np.number).columns:
-        if col != target_col and df[col].nunique() >= 15:
+        if col != target_col and df[col].nunique() >= var.UMBRAL_CONTINUA:
             corr, p_val = stats.pearsonr(df[target_col].dropna(), df[col].dropna())
             # Verifica que la correlación supera el umbral
             if abs(corr) > umbral_corr:
