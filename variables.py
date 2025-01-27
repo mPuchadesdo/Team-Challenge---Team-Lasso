@@ -9,6 +9,8 @@ TIPO_CATEGORICA = "Categórica"
 TIPO_NUM_CONTINUA = "Numérica Continua"
 TIPO_NUM_DISCRETA = "Numérica Discreta"
 
+TIPO_NUMERIC = [TIPO_NUM_CONTINUA, TIPO_CATEGORICA]
+
 # Umbral para tipificar una columna como categorica
 UMBRAL_CATEGORIA = 10 
 # Umbral para tipificar una columna como numérica continua

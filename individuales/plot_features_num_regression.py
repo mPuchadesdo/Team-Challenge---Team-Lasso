@@ -10,7 +10,7 @@
 
 # OK: La función devolverá los valores de "columns" que cumplan con las condiciones anteriores. 
 
-# EXTRA: Se valorará adicionalmente el hecho de que si la lista de columnas a pintar es grande se pinten varios pairplot con un 
+# OK: EXTRA: Se valorará adicionalmente el hecho de que si la lista de columnas a pintar es grande se pinten varios pairplot con un 
 # máximo de cinco columnas en cada pairplot (siendo siempre una de ellas la indicada por "target_col")
 
 # OK: Si la lista está vacía, entonces la función igualará "columns" a las variables numéricas del dataframe y se comportará como
@@ -25,6 +25,23 @@ import variables as var
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+
+from scipy import stats
+
+def get_corr_columns_num(dataframe, target_col, columns=[], umbral_corr=0, pvalue=None):
+    result_columns = []
+    for col in columns:
+        corr, p_val = stats.pearsonr(dataframe[target_col].dropna(), dataframe[col].dropna())
+        # Verifica que la correlación supera el umbral
+        if abs(corr) > umbral_corr:
+            # Si pvalue es None, añade la columna
+            if pvalue is None:
+                result_columns.append(col)
+            # Si pvalue no es None, verificar también la significación estadística
+            elif p_val <= pvalue:
+                result_columns.append(col)
+    return result_columns
+
 
 def plot_features_num_regression(dataframe, target_col="", columns=[], umbral_corr=0, pvalue=None, max_pairplot_column=5):
     """
@@ -46,16 +63,14 @@ def plot_features_num_regression(dataframe, target_col="", columns=[], umbral_co
             > Parametro 2: Matriz de correlación con las variables seleccionadas
 
     """
-    # Comprobamos si los parámetros son correcttos
-    numeric_types = [var.TIPO_NUM_CONTINUA, var.TIPO_NUM_DISCRETA]
-    if not fnc.is_valid_params(dataframe, target_col, columns, numeric_types, numeric_types):
-        return None
-
     final_columns = columns
     # Si no se pasa parámetro 'columns', extraemos todas las columnas numéricas
     if len(final_columns) == 0:
         df_types = fnc.tipifica_variables(dataframe, var.UMBRAL_CATEGORIA, var.UMBRAL_CONTINUA)
-        final_columns = df_types[df_types[var.COLUMN_TIPO].isin(numeric_types)][var.COLUMN_NOMBRE].to_list()
+        final_columns = df_types[df_types[var.COLUMN_TIPO].isin(var.TIPO_NUMERIC)][var.COLUMN_NOMBRE].to_list()
+
+    if not fnc.is_numeric(dataframe, target_col, final_columns):
+        return None
     
     # Borramos la columna target de la lista, en el caso de que exista
     if target_col in final_columns:
@@ -70,15 +85,8 @@ def plot_features_num_regression(dataframe, target_col="", columns=[], umbral_co
     if max_pairplot_column < 2:
         print("El valor de la variable 'max_pairplot_column' debe ser mayor o igual a 2")
         return None
-
     
-    df_corr_matrix = dataframe[final_columns + [target_col]].corr(numeric_only=True) 
-    df_corr_matrix = df_corr_matrix.loc[df_corr_matrix[target_col] >= umbral_corr]
-    corr_columns = df_corr_matrix[target_col].index.to_list()    
-
-    # Borramos la columna target de la lista, en el caso de que exista
-    if target_col in corr_columns:
-        corr_columns.remove(target_col)
+    corr_columns = get_corr_columns_num(dataframe, target_col, final_columns, umbral_corr, pvalue)
 
     # Comprobamos si hay columnas a analizar que correlan con el umbral especificado
     if len(corr_columns) == 0:
@@ -86,8 +94,8 @@ def plot_features_num_regression(dataframe, target_col="", columns=[], umbral_co
         return None
     else:
         # Pintamos la matriz de correlación resultante
-        print("Tabla de correlacion:")
-        print(df_corr_matrix[target_col])
+        # print("Tabla de correlacion:")
+        # print(df_corr_matrix[target_col])
 
         #Pintamos el pairplot
         sns.set_style = var.SNS_STYLE
@@ -96,5 +104,5 @@ def plot_features_num_regression(dataframe, target_col="", columns=[], umbral_co
             sns.pairplot(dataframe[[target_col] + paint_columns[0:max_pairplot_column-1]])
             paint_columns = paint_columns[max_pairplot_column-1:]
 
-    return corr_columns, df_corr_matrix[target_col]
+    return corr_columns
     
