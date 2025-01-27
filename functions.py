@@ -1,11 +1,50 @@
+import numpy as np
 import pandas as pd
 import numpy as np
 import variables as var
-from pandas.api.types import is_numeric_dtype
 
-import toolbox
+def tipifica_variables(df, umbral_categoria= var.UMBRAL_CATEGORIA, umbral_continua= var.UMBRAL_CONTINUA):
+    """
+    Asigna un tipo a las variables de un dataframe en base a su cardinalidad y porcentaje de cardinalidad.
 
-from scipy import stats
+    Argumentos: 
+        df: el dataframe a analizar
+        umbral_categoria (int): número de veces max. que tiene que aparecer una variable para ser categórica
+        bral_continua (float): porcentaje mínimo de cardinalidad que tiene que tener una variable para ser numérica continua
+
+    Retorna: 
+        Un dataframe con los resultados con dos columnas: 
+        - El nombre de la variable 
+        - El tipo sugerido para la variable 
+        
+    """
+
+    resultados = [] #se crea una lista vacía para meter los resultados
+
+    for columna in df.columns: #coge cada columna en el dataframe
+        cardinalidad = df[columna].nunique() #calcula la cardinalidad 
+        porcentaje_cardinalidad = (cardinalidad / len(df))*100 #calcula el porcentaje 
+
+        if cardinalidad == 2:
+            tipo = var.TIPO_BINARIA
+            #tipo = "Binaria"
+
+        elif (cardinalidad < umbral_categoria) and (cardinalidad != 2):
+            tipo = var.TIPO_CATEGORICA
+            #"Categórica"
+
+        elif porcentaje_cardinalidad >= umbral_continua: #mayor que umbral categoria, mayor o igual que umbral continua
+            tipo = var.TIPO_NUM_CONTINUA
+            #"Numérica Continua"
+
+        else:
+            tipo = var.TIPO_NUM_DISCRETA #el porcentaje de cardinalidad es menor que umbral continua 
+            #"Numérica Discreta"
+        
+        resultados.append({"variable": columna, "tipo": tipo}) #mete en la lista de resultados la columna y el tipo que se le asigna 
+
+    return pd.DataFrame(resultados) #crea un dataframe con la lista de resultados 
+
 
 def is_valid_params(dataframe, target_col, columns, target_type=[], columns_type=[]):
     mensajes = []
@@ -43,43 +82,3 @@ def is_valid_params(dataframe, target_col, columns, target_type=[], columns_type
         print(m)
 
     return len(mensajes) == 0
-
-# Devuelve las variables númericas especificadas en el parámetro 'columns'
-def get_num_colums(dataframe, columns=[]):
-    num_columns = []
-    for col in columns:
-        if is_numeric_dtype(dataframe[col]):
-            num_columns.append(col)
-    return num_columns
-
-#Valida que los parámetros sean numéricos
-def is_valid_numeric(dataframe, target_col, columms=[]):
-    result = False
-    if is_valid_params(dataframe, target_col, columms, var.TIPO_NUMERIC, var.TIPO_NUMERIC):
-        num_columns = get_num_colums(dataframe, columms)
-        not_number_columns = []
-        for col in columms:
-            if not col in num_columns:
-                not_number_columns.append(col)
-        
-        if len(not_number_columns) > 0:
-            print(f"Las siguientes columnas no son numéricas: {not_number_columns}")
-        else:
-            result = True
-    
-    return result
-
-#Devuelve las columnas que correlan numéricamente
-def get_corr_columns_num(dataframe, target_col, columns=[], umbral_corr=0, pvalue=None):
-    result_columns = []
-    for col in columns:
-        corr, p_val = stats.pearsonr(dataframe[target_col].dropna(), dataframe[col].dropna())
-        # Verifica que la correlación supera el umbral
-        if abs(corr) > umbral_corr:
-            # Si pvalue es None, añade la columna
-            if pvalue is None:
-                result_columns.append(col)
-            # Si pvalue no es None, verificar también la significación estadística
-            elif p_val <= pvalue:
-                result_columns.append(col)
-    return result_columns
