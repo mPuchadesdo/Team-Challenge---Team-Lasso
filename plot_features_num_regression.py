@@ -10,7 +10,7 @@
 
 # OK: La función devolverá los valores de "columns" que cumplan con las condiciones anteriores. 
 
-# EXTRA: Se valorará adicionalmente el hecho de que si la lista de columnas a pintar es grande se pinten varios pairplot con un 
+# OK: EXTRA: Se valorará adicionalmente el hecho de que si la lista de columnas a pintar es grande se pinten varios pairplot con un 
 # máximo de cinco columnas en cada pairplot (siendo siempre una de ellas la indicada por "target_col")
 
 # OK: Si la lista está vacía, entonces la función igualará "columns" a las variables numéricas del dataframe y se comportará como
