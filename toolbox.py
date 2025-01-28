@@ -303,70 +303,30 @@ def plot_features_cat_regression(dataframe, target_col = "", columns = [], pvalu
         return None
     
     if len(columns) == 0: # Al no introducir el argumento columns, seleccionamos las variables numéricas:
-        df_types = tipifica_variables(dataframe, var.UMBRAL_CATEGORIA, var.UMBRAL_CONTINUA)
-        num_col = df_types[df_types[var.COLUMN_TIPO].isin(numeric_types)][var.COLUMN_NOMBRE].to_list()
+        df_types = fnc.tipifica_variables(dataframe, var.UMBRAL_CATEGORIA, var.UMBRAL_CONTINUA)
+        columns = df_types[df_types[var.COLUMN_TIPO].isin(categoric_types)][var.COLUMN_NOMBRE].to_list()
     
-    sig_num_col = []
     sig_cat_col = []
 
-    if columns == []: # Si no introducimos columnas categóricas, cogeremos las columnas numéricas:
-        if dataframe[num_col].isna().sum().sum() != 0: # Verificamos si existen nulos para avisar al usuario de que existen:
-             print(f"Existen nulos o NaN presentes en las variables numéricas de estudio, tenga en cuenta que el análisis de correlación se realizará eliminando esos nulos.")
-
-        for col in num_col: # Usamos la correlación de pearson para ver si están relacionadas (eliminando nulos en caso de que haya):
-            p = pearsonr(dataframe.dropna()[target_col], dataframe.dropna()[col]).pvalue
-            if p < pvalue: # Si la relación entre variables entra en la significación seleccionada, nos guardamos esa columna:
-                sig_num_col.append(col)
-        if target_col in sig_num_col: # Como nuestro target es una variable numérica, la quitamos de la lista
-            sig_num_col.remove(target_col)
-        if sig_num_col != []:
-            print(f"Las columnas numéricas elegidas son: {sig_num_col}")
-        else:
-             print("No se ha seleccionado ninguna columna numérica.")
-
+    for col in columns:
+        cat = dataframe[col].unique()
+        if len(cat) < 2:
+            continue
+        if len(cat) == 2: # Si la categoría es binaria, utilizamos el test T de Student
+            group0 = dataframe.loc[dataframe[col] == cat[0], target_col]
+            group1 = dataframe.loc[dataframe[col] == cat[1], target_col]
+            p = ttest_ind(group0, group1).pvalue
+        else: # Si la columna tiene más de dos categorías, utilizamos ANOVA:
+            groups = [dataframe.loc[dataframe[col] == c, target_col] for c in cat]
+            p = f_oneway(*groups).pvalue
+        if p < pvalue: # Si la relación entre variables entra en la significación seleccionada, nos guardamos esa columna:
+                sig_cat_col.append(col)
+    if sig_cat_col != []:
+        print(f"Las columnas categóricas elegidas son: {sig_cat_col}")
     else:
-        for col in columns:
-            cat = dataframe[col].unique()
-            if len(cat) < 2:
-                continue
-            if len(cat) == 2: # Si la categoría es binaria, utilizamos el test T de Student
-                group0 = dataframe.loc[dataframe[col] == cat[0], target_col]
-                group1 = dataframe.loc[dataframe[col] == cat[1], target_col]
-                p = ttest_ind(group0, group1).pvalue
-            else: # Si la columna tiene más de dos categorías, utilizamos ANOVA:
-                groups = [dataframe.loc[dataframe[col] == c, target_col] for c in cat]
-                p = f_oneway(*groups).pvalue
-            if p < pvalue: # Si la relación entre variables entra en la significación seleccionada, nos guardamos esa columna:
-                    sig_cat_col.append(col)
-        if sig_cat_col != []:
-            print(f"Las columnas categóricas elegidas son: {sig_cat_col}")
-        else:
-             print("No se ha seleccionado ninguna columna categórica.")
-    
-    if sig_num_col != []:
-        if with_individual_plot:
-            for col in sig_num_col:
-                    # Crea el gráfico
-                    plt.figure(figsize=(12, 8))
-                    sns.scatterplot(x = target_col, y = col, data = dataframe)
-                    plt.title(f"Relación entre {col} y {target_col}")
-                    plt.xlabel(col)
-                    plt.ylabel(f"{col}")
-                    plt.show();
+        print("No se ha seleccionado ninguna columna categórica.")
 
-        else:
-            subplots = len(sig_num_col) # Guardamos las filas que va a tener nuestra figura
-            plt.figure(figsize=(20,15))
-            for i, col in enumerate(sig_num_col):
-                plt.subplot(subplots, 1, i+1) # Colocamos cada columna en una de las filas de nuestra figura
-                sns.scatterplot(x = target_col, y = col, data = dataframe)
-                plt.title(f"Relación entre {col} y {target_col}")
-                plt.xlabel(col)
-                plt.ylabel(f"{col}")
-            plt.tight_layout()
-            plt.show();
-    
-    elif sig_cat_col != []:
+    if sig_cat_col != []:
         if with_individual_plot:
             for col in sig_cat_col:
                 unique_categories = dataframe[col].unique()
