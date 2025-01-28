@@ -293,8 +293,8 @@ def plot_features_cat_regression(dataframe, target_col = "", columns = [], pvalu
     list: lista con las columnas que se hayan elegido (que tengan significación estadística).
     None: si se produce algún error, se devuelve None y un print con la explicación del error.
     """
-
-    sns.set_style(var.SNS_STYLE)
+    
+    sns.set_style = var.SNS_STYLE
     
     # Comprobamos utilizando la función is_valid_params que las columnas cumplen con su tipo elegido (target numérico y columns categóricas):
     numeric_types = [var.TIPO_NUM_CONTINUA, var.TIPO_NUM_DISCRETA]
