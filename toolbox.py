@@ -8,6 +8,22 @@ import seaborn as sns
 
 from scipy.stats import pearsonr, ttest_ind, f_oneway, stats
 
+def describe_df(df):
+    '''
+    Devuelve el df con la descripción de tipo de dato por columna, 
+    el tanto por ciento de valores nulos o missings, los valores 
+    únicos y el porcentaje de cardinalidad.
+    
+    Argumentos:
+    df (pd.DataFrame): Dataset del que se quiere extraer la descripción.
+
+    Retorna:
+    pd.DataFrame: Retorna en el mismo formato el información del argumento df.    
+    '''
+    df_resultado = pd.DataFrame([df.dtypes, df.isna().sum()*100, df.nunique(), round(df.nunique()/len(df) * 100, 2)]) # Cardinaliad y porcentaje de variación de cardinalidad
+    df_resultado = df_resultado.rename(index= {0: "DATA_TYPE", 1: "MISSINGS (%)", 2: "UNIQUE_VALUES", 3: "CARDIN (%)"})
+    return df_resultado
+
 
 def tipifica_variables(df, umbral_categoria= var.UMBRAL_CATEGORIA, umbral_continua= var.UMBRAL_CONTINUA):
     """
