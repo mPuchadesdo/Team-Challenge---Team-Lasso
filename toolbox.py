@@ -22,7 +22,7 @@ def describe_df(df):
     '''
     df_resultado = pd.DataFrame([df.dtypes, df.isna().sum()*100, df.nunique(), round(df.nunique()/len(df) * 100, 2)]) # Cardinaliad y porcentaje de variación de cardinalidad
     df_resultado = df_resultado.rename(index= {0: "DATA_TYPE", 1: "MISSINGS (%)", 2: "UNIQUE_VALUES", 3: "CARDIN (%)"})
-    return df_resultado
+    return df_resultado.T
 
 
 def tipifica_variables(df, umbral_categoria= var.UMBRAL_CATEGORIA, umbral_continua= var.UMBRAL_CONTINUA):
