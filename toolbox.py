@@ -308,7 +308,7 @@ def plot_features_cat_regression(dataframe, target_col = "", columns = [], pvalu
         return None
     
     if len(columns) == 0: # Al no introducir el argumento columns, seleccionamos las variables numéricas:
-        df_types = fnc.tipifica_variables(dataframe, var.UMBRAL_CATEGORIA, var.UMBRAL_CONTINUA)
+        df_types = tipifica_variables(dataframe, var.UMBRAL_CATEGORIA, var.UMBRAL_CONTINUA)
         columns = df_types[df_types[var.COLUMN_TIPO].isin(categoric_types)][var.COLUMN_NOMBRE].to_list()
     
     sig_cat_col = []
