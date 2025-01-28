@@ -3,7 +3,7 @@ import numpy as np
 import variables as var
 from pandas.api.types import is_numeric_dtype
 
-import toolbox
+import toolbox_ML as toolbox
 
 from scipy import stats
 
