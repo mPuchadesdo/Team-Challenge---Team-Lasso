@@ -32,7 +32,11 @@ def is_valid_params(dataframe, target_col, columns, target_type=[], columns_type
             if col not in dataframe.columns: # Control para ver si las columnas 'columns' existen en el dataframe
                 col_not_exist_list.append(col)
             elif col not in column_type_list: # Control para ver si las columnas 'columns' son del tipo especificado 'columns_type'
-                col_not_type_list.append(col)
+                # print(f"{columns_type} in {var.TIPO_NUMERIC} = {columns_type in var.TIPO_NUMERIC}")
+                # print(f"{columns_type} == {var.TIPO_NUMERIC} = {columns_type == var.TIPO_NUMERIC}")
+                # print(f"is_numeric_dtype(dataframe[col]) = {is_numeric_dtype(dataframe[col])}")
+                if not ((columns_type in var.TIPO_NUMERIC or columns_type == var.TIPO_NUMERIC) and is_numeric_dtype(dataframe[col])):
+                    col_not_type_list.append(col)
         
         if len(col_not_exist_list) > 0:
             mensajes.append(f"Las siguientes columnas no existen en el dataframe: {col_not_exist_list}")
