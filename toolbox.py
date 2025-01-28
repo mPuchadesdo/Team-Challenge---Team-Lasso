@@ -217,6 +217,11 @@ def get_features_cat_regression(df, target_col, columns=[], pvalue=0.05, with_in
         Si se establece en True, se generarán diagramas histograma con `sns.histplot`
         para observar la distribución de la variable objetivo separada por las
         categorías de la columna en cuestión.
+    -----
+    Retorna:
+    -----
+    list
+        Lista con las columnas categóricas significativas.
     """
      
     significant_columns = []
